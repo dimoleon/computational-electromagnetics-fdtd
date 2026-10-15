@@ -1,0 +1,394 @@
+\documentclass[12pt]{article}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{fontspec}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+% \usepackage[letf=1.06cm,top=0.9cm,right=1.06cm,bottom=0.49cm]{geometry}
+% \setmainfont{GFS Didot}
+\setmainfont{EB Garamond}
+
+
+% Set page size and margins
+\usepackage[a4paper,top=1.5cm,bottom=1.5cm,left=1.3cm,right=1.3cm]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\parindent}{0pt}
+
+% Useful packages
+\usepackage{minted}
+\usepackage{graphicx}
+\graphicspath{{./media/}}
+\usepackage{subfig}
+\usepackage{float}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{siunitx}
+\usepackage{bm}
+% \usepackage{sectsty}
+% \sectionfont{\fontsize{12}{15}\selectfont}
+
+\title{\vspace{-2cm}060 - Υπολογιστικός Ηλεκτρομαγνητισμός\\
+    \large Εργασία}
+
+\author{Ιωάννης Δημουλιός \\ 10641}
+\date{Εαρινό εξάμηνο 2026}
+
+\lhead{060 - Υπολογιστικός Ηλεκτρομαγνητισμός}
+\chead{Εργασία}
+\rhead{Ιωάννης Δημουλιός}
+\begin{document}
+\maketitle
+\textbf{Μέρος Α} \\
+Ορίζουμε $f = \SI{3.75}{\GHz}$ τη συχνότητα σχεδιασμού, $f_c = \SI{3}{\GHz}$ τη συχνότητα αποκοπής, $\lambda_0 = \dfrac{c_0}{f} = \SI{8}{\cm}$ το μήκος κύματος στο κενό. Χρησιμοποιούμε σύμβαση $e^{+j\omega t}$.\\
+
+\textbf{(1)} Η απόσταση $b$ γράφεται
+$$b = \dfrac{c_0}{2 f_c} = \SI{5}{\cm}.$$
+Ο υπολογιστικός χώρος είναι διαστάσεων $a \times b = 6\lambda_0 \times b$. Θεωρώντας 10 κελιά ανά μήκος κύματος προκύπτουν τα πλήθη κελιών στους άξονες $x$ και $y$ αντίστοιχα
+\[
+N_x = \left\lceil \dfrac{a}{\lambda_0 / 10} \right\rceil = 60, \quad
+\Delta x = \dfrac{a}{N_x}, \quad
+N_y = \left\lceil \dfrac{b}{\Delta x}\right\rceil = 7, \quad
+\Delta y = \dfrac{b}{N_y}
+.\]
+
+Οι συνιστώσες του ηλεκτρικού και μαγνητικού πεδίου $(E_z, H_x, H_y)$ τοποθετούνται στον υπολογιστικό χώρο στις παρακάτω θέσεις:
+\begin{itemize}
+\item το $E_z(i, j)$ στο $(i\Delta x, j \Delta y)$, οπότε οι διαστάσεις του πίνακά του είναι $(N_x + 1, N_y + 1) = (61, 8)$,
+\item το $H_x(i, j)$ στο $(i\Delta x, (j+1/2) \Delta y)$, οπότε οι διαστάσεις του πίνακά του είναι $(N_x + 1, N_y) = (61, 7)$,
+\item το $H_y(i, j)$ στο $((i+1/2)\Delta x, j\Delta y)$, οπότε οι διαστάσεις του πίνακά του είναι $(N_x, N_y + 1) = (60, 8)$.
+\end{itemize}
+Ομοίως, το $E_z$ υπολογίζεται σε ακέραιους χρόνους $n \Delta t$, ενώ τα $H_x$, $H_y$ σε μισούς χρόνους $(n+1/2)\Delta t$. \\
+
+\textbf{(2)}
+Το χρονικό βήμα για να ικανοποιείται η συνθήκη ευστάθειας Courant είναι
+$$
+\Delta t_c=\frac{1}{c_0 \sqrt{\Delta x^{-2}+\Delta y^{-2}}} = \SI{17.76}{\ps}.
+$$
+Χωρίς βλάβη της γενικότητας, στη θέση $x_s = 3 \lambda$ θεωρούμε ότι τη στιγμή $t=0$ η φάση της πηγής είναι $0$. Επομένως, το ηλεκτρικό πεδίο στη θέση της άμεσης πηγής γράφεται
+\[
+E_z(3\lambda, y, t) = A_0 \sin\left(\dfrac{\pi y}{b}\right)\cos(\omega t)u(t)
+,\]
+όπου $u(t)$ η βηματική συνάρτηση. \\
+Παρεμπιπτόντως, στο \texttt{Guidelines.pdf}, σελίδα 6, στον ορισμό του $C_b$, ο αριθμητής πρέπει να είναι $\Delta t$ και όχι 1. \\
+a. Επιλέγουμε $\Delta t = 1.1 \Delta t_c$. Η συνθήκη ευστάθειας επομένως δεν ικανοποιείται. Πράγματι, η τιμές του ηλεκτρικού πεδίου $E_z$ αποκλίνουν. Μετά από 6 περιόδους λαμβάνουμε τιμές της τάξεως του $10^{39}$.
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{a2_a.png}
+    \caption*{A2a. $\Delta t = 1.1\Delta t_c,\, f = \SI{3.75}{\GHz}$}
+\end{figure}
+
+b. Επιλέγουμε $\Delta t = 0.9 \Delta t_c$, επομένως η συνθήκη ευστάθειας ικανοποιείται και όλα βαίνουν ορθώς. Εμφανής είναι και η ανάκλαση των κυμάτων λόγω των τέλεια αγώγιμων τοιχωμάτων (PEC) (δες και το βίντεο \texttt{a2.avi}).
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{a2_b.png}
+    \caption*{A2b. $\Delta t = 0.9\Delta t_c,\, f = \SI{3.75}{\GHz}$}
+\end{figure}
+
+c. Επιλέγουμε $\Delta t = 0.9 \Delta t_c$ και $f = \SI{2.5}{\GHz}$. Επομένως είμαστε κάτω από τη συχνότητα αποκομής και το κύμα της πηγής είναι εκθετικά αποσβεννύμενο. Παρ΄ όλα αυτά πάλι κάποια ασθενέστερα κύματα διαδίδονται σε όλο το μήκος του κυματοδηγού. Αυτό οφείλεται στο υψίσυχνο περιεχόμενο της πηγής που προκύπτει λόγω της διέγερσης. Συγκεκριμένα, μεταβαίνοντας σε διακριτό χρόνο, σταθεροποιώντας το $y$ και παίρνοντας τον DFT της πηγής,
+\begin{gather*}
+E_z[n] = A_0 \sin (\pi y / b) \cos(n 2\pi f \Delta t) \implies\\
+E_z[n] = A \cos(n \theta) u(n)
+\end{gather*}
+\begin{align*}
+DFT(E_z)(\omega) &= A\sum_{n=0}^\infty \cos(n\theta)\exp(-j\omega n) \\
+&=\frac A2\left(
+\sum_{n=0}^{\infty}\big(e^{-j(\omega-\theta)}\big)^n
++
+\sum_{n=0}^{\infty}\big(e^{-j(\omega+\theta)}\big)^n
+\right)\\
+&=\frac A2\left(
+\frac{1}{1-e^{-j(\omega-\theta)}}
++
+\frac{1}{1-e^{-j(\omega+\theta)}}
+\right) \\
+&=A\frac{1-\cos\theta\,e^{-j\omega}}
+{1-2\cos\theta\,e^{-j\omega}+e^{-2j\omega}},
+\end{align*}
+που είναι μη μηδενικό για όλες τις συχνότητες. Νομίζω πολύ ασχολήθηκα. Θέλει και έναν παράγοντα απόσβεσης παίρνοντας το όριο στο 1-.\\
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{a2_c.png}
+    \caption*{A2c. $\Delta t = 0.9\Delta t_c,\, f = \SI{2.5}{\GHz}$}
+\end{figure}
+
+\textbf{(3)} Οι ανακλάσεις όπως προαναφέρθηκε φαίνονται στο \texttt{a2.avi}. Ειλικρινά, θεωρώ πολύ περίπλοκο τον τρόπο που υλοποιείται το PML στις οδηγίες, αν και μάλλον αποδοτικότερο σε μνήμη. Αντ' αυτού ορίζουμε πίνακες $E_{zx}$,$E_{zy}$,$H_x$,$H_y $ που καλύπτουν ολόκληρον τον υπολογιστικό χώρο. Απαιτούμε μόνο στο σημείο διέγερσης με την άμεση πηγή να ισχύει
+$$E_z = E_{zx} + E_{zy}\implies E_{zx} = E_z - E_{zy} \implies
+E_{zx,i_s,j}^{n+1}
+=
+A_0\sin\left(\frac{\pi j\Delta y}{b}\right)
+\cos\left(\omega(n+1)\Delta t\right)
+-E_{zy,i_s,j}^{n+1},
+$$
+όπου $i_s$ η διακρητή τετμημένη της πηγής. Δεν μπορώ να το αποδείξω αυστηρά, αλλά είμαι αρκετά σίγουρος ότι αυτό είναι ισοδύναμο με το να κάναμε τον χωρισμό στην είσοδο του PML.\\
+Επίσης, ορίζουμε $d$ το πάχος του PML σε κάθε πλευρά και
+$$\kappa(x) =
+\frac{\sigma(x)}{\varepsilon_0}
+=
+\frac{\sigma^*(x)}{\mu_0}
+$$
+τον συντελεστή απωλειών, την ηλεκτρική και τη μαγνητική αγωγιμότητα αντίστοιχα σε ολόκληρο το πλέγμα. Αν
+\[
+\xi(x)=
+\begin{cases}
+-x,&-d\le x<0,\\
+0,&0\le x\le a,\\
+x-a,&a<x\le a+d,
+\end{cases}
+\] επιλέγουμε το πολυωνυμικό προφίλ
+\[
+\kappa(x)=\kappa_{\max}\left(\frac{\xi(x)}{d}\right)^m, \qquad
+\kappa_{\max}
+=-\frac{(m+1)c_0\ln R_0}{2d},
+\] όπως προκύπτει από τον ορισμό του στόχου
+\[
+R_0=
+\exp\left(-\frac{2}{c_0}\int_0^d\kappa(\xi)\,d\xi\right).
+\]
+Ενδεικτικές τιμές που επιλέγουμε είναι $m=2$, $R_0 = 10^{-6}$, $N_\text{PML} = 8$ κελιά.\\
+Για τη συνιστώσα τώρα του ηλεκτρικού πεδίου $E_{zx}$ ισχύει
+\[
+\partial_t E_{zx} = \dfrac{\partial_x H_y}{\varepsilon_0} - \kappa E_{zx}
+.\]
+Στο εσωτερικό του PML όπου $\kappa > 0$, πολλαπλασιάζουμε την παραπάνω εξίσωση με τον ολοκληρωτικό παράγοντα $\exp(-\kappa t)$ και ολοκληρώνουμε τον χρόνο από τη στιγμή $n \Delta t$ μέχρι την $(n+1)\Delta t$, οπότε προκύπτει η διακριτή εξίσωση ανανέωσης
+\[
+E_{zx}^{n+1} = \exp(-\kappa \Delta t)E_{zx}^{n} + \dfrac{1-\exp(-\kappa \Delta t)}{\varepsilon_0 \kappa}\cdot \dfrac{H_y^{n+1/2} - H_y^{n-1/2}}{\Delta x}
+.\]
+Δουλεύοντας όμοια και με την εξίσωση $\partial_t H_y = \partial_x E_z / \mu_0 - \kappa H_y$, και αν
+\[
+a(\kappa)=e^{-\kappa\Delta t},
+\qquad
+b_M(\kappa)=
+\begin{cases}
+\dfrac{1-e^{-\kappa\Delta t}}{M\kappa},&\kappa>0,\\[6pt]
+\dfrac{\Delta t}{M},&\kappa=0,
+\end{cases}
+\]
+προκύπτουν οι 4 εξισώσεις ανανέωσης των πεδίων για όλο το πλέγμα
+\begin{align*}
+H_{y,i+1/2,j}^{n+1/2}
+&=
+a_{h,i+1/2}H_{y,i+1/2,j}^{n-1/2}
++
+b_{h,i+1/2}
+\frac{E_{z,i+1,j}^{n}-E_{z,i,j}^{n}}{\Delta x}, \\
+H_{x,i,j+1/2}^{n+1/2}
+&=
+H_{x,i,j+1/2}^{n-1/2}
+-\frac{\Delta t}{\mu_0\Delta y}
+\left(E_{z,i,j+1}^{n}-E_{z,i,j}^{n}\right),\\
+E_{zx,i,j}^{n+1}
+&=
+a_{e,i}E_{zx,i,j}^{n}
++
+b_{e,i}
+\frac{H_{y,i+1/2,j}^{n+1/2}-H_{y,i-1/2,j}^{n+1/2}}
+{\Delta x},\\
+E_{zy,i,j}^{n+1}
+&=
+E_{zy,i,j}^{n}
+-\frac{\Delta t}{\varepsilon_0\Delta y}
+\left(H_{x,i,j+1/2}^{n+1/2}-H_{x,i,j-1/2}^{n+1/2}\right).
+\end{align*}
+Χρησιμοποιούμε την εξής προσομοίωση αναφοράς: Θέτουμε $R=1$, ώστε το PML να λειτουργεί ουσιαστικά σαν συνέχεια του αρχικού υπολογιστικού χώρου, και αποθέτουμε επαρκώς πολλά κελιά στο PML, ώστε να είμαστε βέβαιοι ότι κανένα κύμα δεν προλαβαίνει να φτάσει στα εξωτερικά PEC τοιχώματα του PML, να ανακλαστεί και να επιστρέψει επηρεάζοντας τις τιμές του πεδίου στον αρχικό υπολογιστικό χώρο. Ενδεικτικά για χρόνο προσομοίωσης $30/f$, επιλέγουμε $N_\text{PML} = 150$ (το κύμα διανύει 10 κελία ανά περίοδο). Ύστερα υπολογίζουμε το σχετικό σφάλμα ως προς αυτήν τη προσομοίωση κοντά στα κελιά του PML για να εκτιμήσουμε την απορροφητικότητα του PML στις υπόλοιπες προσωμοιώσεις. Υπολογίζουμε το τετραγωνικό σχετικό σφάλμα, λοιπόν, ως εξής
+\[
+\epsilon =
+\frac{
+\left[\sum_{n,i,j}
+\left|E_{z,\mathrm{PML}}^{n}(i,j)
+-E_{z,\mathrm{ref}}^{n}(i,j)\right|^2\right]^{1/2}
+}{
+\left[\sum_{n,i,j}
+\left|E_{z,\mathrm{ref}}^{n}(i,j)\right|^2\right]^{1/2}
+}.
+\]
+Η άθροιση ως προς το $i$ πραγματοποιείτα μόνο για τις τιμές του στο διάστημα $[0.8 N_x, N_x]$, ώστε να είμαστε κοντά στο αριστερό PML. Επίσης, για κάθε προσομοίωση, υπολογίζουμε το μέγιστο απόλυτο σφάλμα ηλεκτρικού πεδίου ως προς την προσομοίωση αναφοράς. \\
+Έτσι λαμβάνουμε τον ακόλουθο πίνακα σφαλμάτων.
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{c c c c c}
+        \hline
+        $N_\text{PML}$ & $m$ & $R$ & $\epsilon$ &
+        Μέγιστη διαφορά πεδίου [V/m] \\
+        \hline
+         8 &  2 & 10^{-6} & 1.43\% & 0.0098 \\
+         8 &  1 & 10^{-6} & 0.79\% & 0.0266 \\
+         8 &  3 & 10^{-6} & 1.52\% & 0.0094 \\
+         16 & 2 & 10^{-6} & 0.33\% & 0.0048 \\
+         16 & 2 & 10^{-9} & 0.13\% & 0.0042 \\
+         32 & 2 & 10^{-9} & 0.05\% & 0.0013 \\
+        \hline
+    \end{tabular}
+\end{table}
+Γενικά φαίνεται ότι το τετραγωνικό προφίλ $m=2$ είναι ένας καλός συμβιβασμός ανάμεσα σε σχετικό και μέγιστο σφάλμα. Φυσικά όσο αυξάνονται τα κελιά και μειώνεται το $R$ η απόδοση του PML βελτιώνεται. \\
+
+\textbf{(4)}
+Λοιπόν, ο κυματικός αριθμός είναι
+\[
+\beta_x=\frac{\omega}{c_0}
+\sqrt{1-\left(\frac{f_c}{f}\right)^2}
+,\] τότε η φασική ταχύτητα γράφεται
+\[
+v_{\mathrm{p}}
+=\frac{\omega}{\beta_x}
+=\frac{c_0}{\sqrt{1-(f_c/f)^2}}
+=4.99654\cdot 10^8\,\mathrm{m/s}.
+\]
+Η διαφορά φάσης για δυο θέσεις $x_1$, $x_2$ γράφεται
+\[
+\Delta \phi = -\beta_x x_2 -(-\beta_x x_1) = -\beta_x L \implies v_\text{p,num} = -\frac{\omega L}{\Delta \phi}
+.\]
+
+Επιλέγουμε τις θέσεις $x_1 = 4\lambda_0$, $x_2 = 4.4\lambda_0$ με σταθερό $y$, το κοντινότερο στο $b/2$ στο οποίο υπολογίζουμε το ηλεκτρικό πεδίο, ενώ λαμβάνουμε υπ' όψιν μόνο τις τιμές του $E_z$ μετά από 10 περιόδους προσομοίωσης. Επίσης, θεωρούμε σταθερό πλάτος πηγής $A_0 = \SI{1}{\volt}$.\\
+Στα δύο σημεία προσεγγίζουμε το ηλεκτρικό πεδίο ως εξής:
+\[
+E_k(t) = r_k\cos(\omega t)+s_k\sin(\omega t),
+\qquad k=1,2.
+\]
+Οι πραγματικοί συντελεστές \(r_k,s_k\) υπολογίζονται με τη μέθοδο ελαχίστων τετραγώνων, ελαχιστοποιώντας
+\[
+\sum_{\ell}
+\left[
+E_k(t_\ell)-r_k\cos(\omega t_\ell)
+-s_k\sin(\omega t_\ell)
+\right]^2.
+\]
+Εφόσον
+\[
+E_k(t)= \cos(\omega t+\phi_k),
+\]
+από την ανάπτυξη του συνημιτόνου προκύπτουν
+\[
+r_k=\cos\phi_k,\qquad
+s_k=-\sin\phi_k.
+\]
+Επομένως,
+\[
+r_2s_1-r_1s_2=\sin(\phi_2-\phi_1),
+\]
+\[
+r_1r_2+s_1s_2=\cos(\phi_2-\phi_1),
+\]
+και η διαφορά φάσης υπολογίζεται ως
+\[
+\Delta\phi=
+\text{atan2}
+\left(r_2s_1-r_1s_2,\;r_1r_2+s_1s_2\right).
+\]
+Έτσι, προκύπτουν τα σχετικά σφάλματα και οι χρόνοι επίλυσης του παρακάτω πίνακα. Σημειωτέον ότι θεωρούμε σταθερό πάχος PML $1.6\lambda_0$, που αντιστοιχεί σε 8, 16, 32 κελιά για τις διαφορετικές χωρικές διακριτοποιήσεις της άσκησης.
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{c c c}
+        \hline
+        $\Delta x$ &
+        Σχετικό σφάλμα $v_\text{p}$ [\%] &
+        Χρόνος εκτέλεσης [s] \\
+        \hline
+        $\lambda_0/5$  & $1.34$ & $0.1797$ \\
+        $\lambda_0/10$ & $0.43$ & $0.1852$ \\
+        $\lambda_0/20$ & $0.12$ & $0.2165$ \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\textbf{Μέρος Β} \\
+\textbf{(1)}
+Οι εξισώσεις Maxwell γράφονται
+\[
+\frac{\partial H_x}{\partial t}
+=-\frac{1}{\mu_0}\frac{\partial E_z}{\partial y},
+\qquad
+\frac{\partial(\varepsilon E_z)}{\partial t}
+=-\frac{\partial H_x}{\partial y}.
+\]
+και η διακριτοποίησή τους
+\[
+H_{j+1/2}^{n+1/2}
+=
+H_{j+1/2}^{n-1/2}
+-\frac{\Delta t}{\mu_0\Delta y}
+\left(E_{j+1}^{n}-E_j^{n}\right).
+\]
+και, λαμβάνοντας υπ' όψιν τη χρονικά μεταβαλλόμενη διηλεκτρική σταθερά
+\[
+\frac{\varepsilon_j^{n+1}E_j^{n+1}
+-\varepsilon_j^nE_j^n}{\Delta t}
+=
+-\frac{H_{j+1/2}^{n+1/2}-H_{j-1/2}^{n+1/2}}{\Delta y} \implies
+E_j^{n+1}
+=
+\frac{\varepsilon_j^n}{\varepsilon_j^{n+1}}E_j^n
+-\frac{\Delta t}{\varepsilon_j^{n+1}\Delta y}
+\left(H_{j+1/2}^{n+1/2}-H_{j-1/2}^{n+1/2}\right).
+\]
+\textbf{(2)}
+Το μήκος κύματος στον ελεύθερο χώρο είναι $\lambda_0 = c_0/f_0$. Στο εσωτερικό της διηλεκτρικής πλάκας όμως το μήκος κύματος γράφεται
+\[
+\lambda_{\text{ref}}
+=\frac{\lambda_0}{\sqrt{\varepsilon_{r,\max}}}
+=\frac{\lambda_0}{\sqrt{\varepsilon_\rho + \Delta \varepsilon}} < \lambda_0
+,\] επομένως σχεδιάζουμε βάσει του $\lambda_\text{ref}$. \\
+Αν $M$ το πλήθος των κελιών στο διηλεκτρικό, τότε
+\[\dfrac{L_y}{M} \leq \frac{\lambda_\text{ref}}{10} \implies
+M \geq \left\lceil \frac{10 L_y}{\lambda_\text{ref}}\right\rceil = 13
+,\] οπότε
+\[
+\Delta y = \frac{L_y}{M}, \qquad N_y = \frac{2L}{\Delta y} = 260
+.\]
+Το ηλεκτρικό πεδίο $E_z$ αρχικοποιείται με $N_y + 1 = 261$ στοιχεία και το μαγνητικό πεδίο $H_x$ με $N_y = 260$ στοιχεία.
+Η διηλεκτρική επιτρεπτότητα γράφεται για όλον τον υπολογιστικό χώρο
+\[
+\varepsilon(y,t)=
+\begin{cases}
+\varepsilon_0\left(5.25+0.85\sin(\Omega t)\right),
+&0<y<L_y,\\
+\varepsilon_0,&y<0,\: y>L_y, \\
+0.5\varepsilon_0\left(5.25+0.85\sin(\Omega t)\right),
+&y=0,\: y=L_y.
+\end{cases}
+\]
+Παρατηρείστε ότι στα άκρα της πλάκας, στις θέσεις $y = 0$ και $y = L_y$ παίρνουμε τον μέσο όρο της επιτρεπτότητας εντός και εκτός της πλάκας. Πρόκειται για μια ενεργό τιμή της επιτρεπτότητας που προκύπτει λόγω της συνέχειας της εφαπτομενικής συνιστώσας και της εφαρμογής του νόμου του Ampere
+\begin{align*}
+-H_{j+1/2}(t)+H_{j-1/2}(t) &=
+\oint_C \mathbf{H} \cdot \text{d} \boldsymbol{l} \\
+&=  \iint_S \left(\frac{\partial \mathbf{D}}{\partial t} \right) \cdot \text{d} \mathbf{S} \\
+&=\frac{\partial}{\partial t} \int_{y_j-\Delta y/2}^{y_j+\Delta y/2} \varepsilon(y,t)E_z(y,t)\,dy \\
+&= E_j(t)\left[\varepsilon_0\frac{\Delta y}{2}+\varepsilon_0\varepsilon_r(t)\frac{\Delta y}{2}\right].
+\end{align*}
+Για το χρονικό βήμα τώρα, πρέπει να ικανοποιείται η συνθήκη ευστάθειας Courant, δηλαδή
+\[\Delta t \leq \Delta t_c = \min\frac{\Delta y}{v_p} = \min \frac{\sqrt{\varepsilon_r} \Delta y}{c_0} = \frac{\Delta y}{c_0}.
+\]
+Επιλέγουμε $\Delta t = 0.9 \Delta t_c$. \\
+
+
+\textbf{(3)}
+Υλοποιούμε το PML με πανομοιότυπο τρόπο με αυτόν της προηγούμενης άσκησης. Οι παράμετροι του PML είναι πέραν του μεταβλητού πλήθους κελιών $R = 10^{-9}$, $m = 2$. Να την πω την αμαρτία, κουράστηκα να υπολογίζω σφάλματα και να κάνω άλλα διαγράμματα. Δείτε τα διαγράμματα χρόνου-πεδίου παρακάτω. \\
+
+\textbf{Οργάνωση Κώδικα} \\
+Το Α μέρος στον φάκελο \texttt{src/partA}. Από αυτήν τη θέση για να τρέξετε τον κώδικα του ερωτήματος 2, τρέξτε το αρχείο \texttt{a2.m}. Για τα ερωτήματα 3 και 4, τρέξτε το αρχείο \texttt{a34.m}. Περιλαμβάνονται και βίντεο προσομοιώσεων, το ένα με PEC (\texttt{a2.mp4}) και το άλλο με PML (\texttt{a34.mp4}).\\
+Το B μέρος στον φάκελο \texttt{src/partB}. Από αυτήν τη θέση, τρέξτε το αρχείο \texttt{main.m}. \\
+
+\textbf{Χρήση LLMs} \\
+Χρησιμοποίησα ChatGPT αρκετά για τα διαγράμματα και σε πολλά σημεία για να μου στρώσει τη \LaTeX. Επίσης, στο A4, ενώ είχα την κεντρική ιδέα για τα ελάχιστα τετράγωνα, μου τα έκανα λίγο πιο λιανά και με έπεισε και μένα. \\
+Ο κώδικας ως επί το πλείστον είναι γραμμένος από μένα.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{b3_pec.png}
+    \caption*{B3. PEC}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{b3_8.png}
+    \caption*{B3. PML με 8 κελιά}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{b3_16.png}
+    \caption*{B3. PML με 16 κελιά}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.4\textwidth,angle=90]{b3_100.png}
+    \caption*{B3. PML με 100 κελιά}
+\end{figure}
+\end{document}
